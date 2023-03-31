@@ -1,10 +1,13 @@
+// created by ganesh 
+
 import Configs from "../configs/Config";
-import { sendGetRequest } from "../utils/RequestHelper";
+import { sendGetRequest,} from "../utils/RequestHelper";
 
 export const mannerOfDeath = async (requestObj) => {
   let url = Configs.BASE_URL + "masters/mannerofDeath";
   return sendGetRequest(url, requestObj);
 };
+
 
 export const carcassCondition = async (requestObj) => {
   let url = Configs.BASE_URL + "masters/carcassCondition";
@@ -16,3 +19,13 @@ export const carcassDisposition = async (requestObj) => {
   let url = Configs.BASE_URL + "masters/carcassDisposition";
   return sendGetRequest(url, requestObj);
 };
+
+
+export const getAnimal = async (requestObj) => {
+  let url = Configs.BASE_URL + "animals";
+  return sendGetRequest(url, requestObj);
+};
+
+
+
+

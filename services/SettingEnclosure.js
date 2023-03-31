@@ -5,3 +5,6 @@ export const getEnclosureService = async(requestObj) =>{
     let url = Configs.BASE_URL + "/enclosure/settings"
     return sendGetRequest(url, requestObj)
   }
+
+
+ 

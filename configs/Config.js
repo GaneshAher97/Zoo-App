@@ -258,6 +258,12 @@ export const buttonData = [
     screen: "Disposition",
     buttonTitle: "+Disposition",
   },
+  {
+    id:48,
+    screen:"ListAnimal",
+    buttonTitle:"+ListAnimal",
+
+  },
  
 ];
 

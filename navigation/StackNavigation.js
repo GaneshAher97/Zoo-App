@@ -74,6 +74,7 @@ import CreateZone from "../screen/Master/CreateZone";
 import ListStaff from "../screen/Staff Management/ListStaff";
 import AddFeedLog from "../screen/Feed/AddFeedLog";
 import Disposition from "../screen/Animals/Disposition";
+import ListAnimal from "../screen/Animals/ListAnimal";
 
 const Stack = createStackNavigator();
 
@@ -176,6 +177,8 @@ const MainStackNavigation = () => {
       <Stack.Screen name="AddFeedLog" component={AddFeedLog} />
 
       <Stack.Screen name="Disposition" component={Disposition} />
+
+      <Stack.Screen name="ListAnimal" component={ListAnimal} />
      
 
     </Stack.Navigator>

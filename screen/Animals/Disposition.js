@@ -1,3 +1,5 @@
+// Created by Ganesh
+
 import React, { useContext, useEffect, useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
 import Category from "../../components/DropDownBox";
@@ -7,18 +9,17 @@ import { getSection } from "../../services/staffManagement/getEducationType";
 import { AddEnclosure, editEnclosure } from "../../services/FormEnclosureServices";
 import Loader from "../../components/Loader";
 import { useNavigation } from "@react-navigation/native";
-import { Button } from "react-native-paper";
-
 import AppContext from "../../context/AppContext";
 import InputBox from "../../components/InputBox";
 
-import { getEnclosureService } from "../../services/SettingEnclosure";
-import FloatingButton from "../../components/FloatingButton";
-import { BottomPopUp } from "../../components/BottomSheet";
 import DatePicker from "../../components/DatePicker";
 import { data } from "../../configs/Config";
 import { BottomSheet } from "../../configs/Config";
-import { carcassCondition, carcassDisposition, mannerOfDeath } from "../../services/DispositionService";
+import { carcassCondition, carcassDisposition, getAnimal, mannerOfDeath } from "../../services/DispositionService";
+import moment from "moment";
+import { addanimalmortality } from "../../services/AddDispositioService";
+
+
 
 const EntityItem = [
 
@@ -31,6 +32,18 @@ const EntityItem = [
         id: 2,
         name: "Auto completed"
     }
+]
+
+const Necropsy = [
+    {
+        id: true,
+        name: "Yes",
+
+    },
+    {
+        id: false,
+        name: "No",
+    },
 ]
 
 // const Manner = [
@@ -186,101 +199,85 @@ const EntityItem = [
 //     },
 
 // ]
-const Necropsy = [
-    {
-        id: 1,
-        name: "Yes",
 
-    },
-    {
-        id: 2,
-        name: "No",
-    },
-]
 
 
 const Disposition = (props) => {
+
     const navigation = useNavigation();
+
     const context = useContext(AppContext);
 
-    //   comment float
-    let popUpRef = React.createRef();
-    const onShowPopUp = () => {
-        popUpRef.show();
-    };
+    const [encEnvData, setencEnvData] = useState([])
+    const [encTypeData, setencTypeData] = useState([])
 
-
-    const onClosePopUp = (item) => {
-        popUpRef.close();
-    };
-    const onIconClick = (item) => {
-        popUpRef.close();
-        navigation.navigate(item.screen);
-    };
-
-
-    const [date, setDate] = useState(props.route.params?.item?.user_dob ?? "");
-
-    const [reason, setReason] = useState(props.route.params?.item?.death_reason ?? "");
-    const [note, setNotes] = useState(props.route.params?.item?.user_notes ?? "");
-
-    const [enclosure_id, SetEnclosure_id] = useState(props.route.params?.item.enclosure_id ?? "")
     const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
+    const [isEncEnvMenuOpen, setisEncEnvMenuOpen] = useState(false);
 
-    const [entityData, setEntityData] = useState([]);
+    const [isEncTypeMenuOpen, setisEncTypeMenuOpen] = useState(false);
+    const [isEncTypeMenuOpen1, setisEncTypeMenuOpen1] = useState(false);
+    const [isEncTypeMenuOpen2, setisEncTypeMenuOpen2] = useState(false);
 
+    const [isError, setIsError] = useState({});
+    const [errorMessage, setErrorMessage] = useState({});
 
+    // Entity
     const [entity, setEntity] = useState(props.route.params?.item?.data ?? "");
-
+    const [entityData, setEntityData] = useState([]);
     const [entityId, setEntityId] = useState(props.route.params?.item?.entity_id ?? "");
 
-    const [isEncEnvMenuOpen, setisEncEnvMenuOpen] = useState(false);
-    const [encEnvData, setencEnvData] = useState([])
+    // date
+    const [date, setDate] = useState(props.route.params?.item?.user_dob ?? "");
 
     // manner of death
     const [mannerDeath, setMannerDeath] = useState(props.route.params?.item.manner_death ?? "");
+    const [mannerDeathId, setMannerDeathId] = useState(props.route.params?.item?.manner_of_death ?? "");
     const [mannerData, setMannerData] = useState([]);
-    const [isEncTypeMenuOpen, setisEncTypeMenuOpen] = useState(false);
-    const [isEncTypeMenuOpen1, setisEncTypeMenuOpen1] = useState(false);
-    // necropsy
-    const [isEncTypeMenuOpen2, setisEncTypeMenuOpen2] = useState(false);
+
+    // reasons of death
+    const [reason, setReason] = useState(props.route.params?.item?.reason_for_death ?? "");
+    // const [reasonId, setReasonId] = useState(props.route.params?.item?.reason_for_death ?? "");
+
     // carcass condition
     const [condition, setCondition] = useState(props.route.params?.item?.condition_type ?? "");
+    const [conditionId, setConditionId] = useState(props.route.params?.item?.carcass_condition ?? "");
     const [conditionData, setConditionData] = useState([]);
     // carcass disposition
     const [disposition, setDisposition] = useState(props.route.params?.item.disposition_type ?? "");
+    const [dispositionId, setDispositionId] = useState(props.route.params?.item?.carcass_disposition ?? "");
     const [dispositionData, setDispositionData] = useState([]);
+
+    //    notes
+    const [note, setNotes] = useState(props.route.params?.item?.user_for_notes ?? "");
+
     // necropsy
-
     const [necropsy, setNecropsy] = useState(props.route.params?.item.necropsy_type ?? "");
-
-    const [encTypeData, setencTypeData] = useState([])
-
-    const [isError, setIsError] = useState({});
-
-    const [errorMessage, setErrorMessage] = useState({});
 
     const [loading, setLoding] = useState(false);
 
 
+    // Get Animal
+    const [animalData, setAnimalData] = useState([]);
 
-
-    // drop down state===============================================================
+    // drop down state ===============================================================
 
     const [enclosureTypeDown, setEnclosureTypeDown] = useState(false)
+
     const catPressed = (item) => {
-        item.map((value) => { setEntity(value.name) })
-        // console.log('item==========>', item);
-        // setSection(item.map((u) => u.name).join(", "));
-        // setSectionId(item.map((id) => id.id).join(','));
+        // item.map((value) => { setEntity(value.name) })
+
+        setEntity(item.map((u) => u.name).join(", "));
+
+        setEntityId(item.map((id) => id.id).join(','));
+
         setIsSectionMenuOpen(false)
     };
 
     // map manner of death
-
     const catEnvPress = (item) => {
-        //  item.map((value) => { setMannerDeath(value.name) });
+
         setMannerDeath(item.map((u) => u.name).join(","));
+        setMannerDeathId(item.map((id) => id.id).join(','));
 
         setisEncEnvMenuOpen(false);
     }
@@ -289,13 +286,16 @@ const Disposition = (props) => {
         // item.map((value) => { setCondition(value.name) })
 
         setCondition(item.map((u) => u.name).join(","));
+        setConditionId(item.map((id) => id.id).join(','));
+
+
         setisEncTypeMenuOpen(false)
     }
     //  carcass disposition
     const catEnTypePress1 = (item) => {
 
         setDisposition(item.map((u) => u.name).join(","));
-
+        setDispositionId(item.map((id) => id.id).join(','));
         setisEncTypeMenuOpen1(false)
     }
 
@@ -305,6 +305,7 @@ const Disposition = (props) => {
         // setEnclosureType1(item.map((u) => u.name).join(","))
         setisEncTypeMenuOpen2(false)
     }
+
     // mannner of the date
     useEffect(() => {
         mannerOfDeath().then((res) => {
@@ -314,35 +315,36 @@ const Disposition = (props) => {
 
     // carcass condition 
     useEffect(() => {
-
-
         carcassCondition().then((res) => {
             setConditionData(res.data);
         })
 
     }, [])
 
-
-
     // setDispositionData
+
     useEffect(() => {
         carcassDisposition().then((res) => {
+            console.log(res, 'res')
             setDispositionData(res.data);
         })
 
     }, [])
+    // Get Animal Data
+
     useEffect(() => {
-        getEnclosureService().then((res) => {
-            setencTypeData(res.data.condition_type);
-            setencEnvData(res.data.environment_type)
+        getAnimal().then((res) => {
+            console.log(res, 'res............................')
+            setAnimalData(res.data);
         })
+
     }, [])
 
     const validation = () => {
 
         if (entity.length === 0) {
             setIsError({ entity: true })
-            setErrorMessage({ entity: "Select Entity Name" })
+            setErrorMessage({ entity: "Select The Entity Name" })
             return false;
         }
         else if (date === "") {
@@ -352,91 +354,74 @@ const Disposition = (props) => {
         }
         else if (mannerDeath.trim().length === 0) {
             setIsError({ mannerDeath: true })
-            setErrorMessage({ mannerDeath: "Enter The Manner of Death" })
+            setErrorMessage({ mannerDeath: "Select The Manner of Death" })
             return false;
         }
 
         else if (reason.trim().length === 0) {
             setIsError({ reason: true });
 
-            setErrorMessage({ reason: "Enter  Reason of Death" });
+            setErrorMessage({ reason: "Enter The Reason of Death" });
             return false;
         }
         else if (condition.trim().length === 0) {
             setIsError({ condition: true })
-            setErrorMessage({ condition: "Select Carcoss Condition" })
+            setErrorMessage({ condition: "Select The Carcoss Condition" })
             return false;
 
         }
         else if (disposition.trim().length === 0) {
             setIsError({ disposition: true })
-            setErrorMessage({ disposition: "Select Carcoss Dispostion" })
+            setErrorMessage({ disposition: "Select The Carcoss Disposition" })
             return false;
 
         }
 
         else if (note.trim().length === 0) {
             setIsError({ note: true });
-
-            setErrorMessage({ note: "Enter notes" });
+            setErrorMessage({ note: "Enter The Notes" });
             return false;
         }
         // necropsy
 
         else if (necropsy.trim().length === 0) {
             setIsError({ necropsy: true })
-            setErrorMessage({ necropsy: "Select necropsy" })
+            setErrorMessage({ necropsy: "Select The Necropsy" })
             return false;
 
         }
         return true;
     };
 
-    const getEnclosureEdit = () => {
-        if (validation()) {
-
-            let obj = {
-                entity_id: entityId,
-                manner_death: mannerDeath,
-                condition_type: condition,
-                disposition_type: disposition,
-                // necropsy
-                necropsy_type: necropsy,
-                user_dob: date,
-                death_reason: reason,
-                user_notes: note,
-
-            }
-            console.log('edit obj=========', obj);
-            editEnclosure(obj).then((res) => {
-                alert(res.message);
-            }).catch((err) => {
-                console.log('error===>', err);
-            }).finally(() => {
-                navigation.goBack();
-            })
-        }
-    }
 
     const getEnclosureFormData = () => {
         if (validation()) {
             let obj = {
+                "entity_id": entityId,
 
-                entity_id: entityId,
+                "entity_type": entity,
 
-                user_enclosure_id: context.userDetails.user.user_id,
+                "discovered_date": moment(date).format('YYYY-MM-DD'),
 
-                manner_death: mannerDeath,
+                "is_estimate": true,
 
-                condition_type: condition,
-                disposition_type: disposition,
-                necropsy_type: necropsy,
+                "manner_of_death": mannerDeathId,
+
+                "reason_for_death": reason,
+
+                "carcass_condition": conditionId,
 
 
+
+                "carcass_disposition": dispositionId,
+                "user_for_notes": note,
+
+                "submitted_for_necropsy": true
             }
+            console.log("object.............", obj);
 
             setLoding(true)
-            AddEnclosure(obj).then((res) => {
+            addanimalmortality(obj).then((res) => {
                 console.log("response=============", res);
                 alert(res.message)
             }).finally(() => {
@@ -558,6 +543,7 @@ const Disposition = (props) => {
                     numberOfLines={3}
                     errors={errorMessage.reason}
                     isError={isError.reason}
+                    keyboardType={"default"}
                 />
 
 
@@ -573,7 +559,7 @@ const Disposition = (props) => {
                     errors={errorMessage.condition}
                     isError={isError.condition}
 
-                    keyboardType={"default"}
+
                 />
 
                 <InputBox
@@ -596,7 +582,7 @@ const Disposition = (props) => {
                         setNotes(val);
                     }}
                     multiline={true}
-                    numberOfLines={2}
+                    numberOfLines={3}
                     errors={errorMessage.note}
                     isError={isError.note}
                 />
@@ -678,47 +664,11 @@ const Disposition = (props) => {
                     />
                 </View>
             ) : null}
-
-            {/* <FloatingButton onPress={onShowPopUp} icon={"plus"} />
-
-            <BottomPopUp
-                ref={(target) => (popUpRef = target)}
-                onTouchOutside={onClosePopUp}
-            >
-                {
-
-                    <FlatList
-                        numColumns={2}
-
-
-
-                        data={BottomSheet}
-
-                        width="100%"
-                        style={{ marginTop: 50, marginBottom: 30 }}
-                        renderItem={({ item }) => {
-                            return (
-                                <View style={Styles.btnCont}>
-
-                                    <Button
-                                        style={Styles.button}
-                                        onPress={() => onIconClick(item)}
-                                    >
-                                        <Text style={Styles.btnText}>{item.buttonTitle}</Text>
-
-
-
-                                    </Button>
-                                </View>
-                            );
-                        }}
-                    />
-                }
-            </BottomPopUp> */}
-
+    
         </>
     );
 };
+
 const Styles = StyleSheet.create({
     Label: {
         // top: "3%",
