@@ -11,7 +11,7 @@ const DatePicker = (
   { onChange = () => { }, onHide = () => { }, isDarkModeEnabled = false, today }
 ) => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [date, setDate] = useState(props.today ?? new Date());
+  const [date, setDate] = useState(props.today ?? "");
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };
@@ -22,7 +22,7 @@ const DatePicker = (
 
   const handleConfirm = (date) => {
     // console.warn("A date has been picked: ", date);
-    setDate(date);
+    // setDate(date);
     props.onChange(date);
     // props.getDate(date)
     hideDatePicker();
@@ -38,8 +38,8 @@ const DatePicker = (
         }}
         defaultValue={null}
         value={props.today ? (props.mode == "time"
-          ? moment(date).format("LT")
-          : moment(date).format("ddd, MMM Do YYYY")) : ""}
+          ? moment(props.today).format("LT")
+          : moment(props.today).format(props.format ?? "ddd, MMM Do YYYY")) : ""}
         rightElement="calendar"
         DropDown={() => {
           showDatePicker();

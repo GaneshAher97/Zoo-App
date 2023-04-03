@@ -1,4 +1,6 @@
-// Created by Ganesh
+// whole component Created  by Ganesh 
+// Date:- 31 March 2023
+
 
 import React, { useContext, useEffect, useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
@@ -227,7 +229,8 @@ const Disposition = (props) => {
     const [entityId, setEntityId] = useState(props.route.params?.item?.entity_id ?? "");
 
     // date
-    const [date, setDate] = useState(props.route.params?.item?.user_dob ?? "");
+    const [date, setDate] = useState(props.route.params?.item?.user_dob ?? new Date());
+    // const [currentDate, setCurrentDate] = useState(new Date());
 
     // manner of death
     const [mannerDeath, setMannerDeath] = useState(props.route.params?.item.manner_death ?? "");
@@ -483,6 +486,16 @@ const Disposition = (props) => {
         setIsSectionMenuOpen(false)
     }
 
+    const setSelectedDate = (item)=>{
+
+        let today = new Date();
+        if(today < item){
+            alert("Select only today or previous date");
+            return;
+        }              
+        setDate(item);
+    }
+
 
     // console.log('drop down=======>',);
 
@@ -506,11 +519,8 @@ const Disposition = (props) => {
                 />
                 <DatePicker
                     today={date}
-                    onChange={(item) => {
-                        let today = item.toJSON().slice(0, 10);
-                        setDate(today);
-                    }}
-                    title="DATE"
+                    onChange={setSelectedDate}
+                    // title='DATE'
                 />
 
 
